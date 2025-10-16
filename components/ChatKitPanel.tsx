@@ -30,6 +30,10 @@ type ErrorState = {
   retryable: boolean;
 };
 
+type StartScreenPrompt = {
+  title: string;
+};
+
 const isBrowser = typeof window !== "undefined";
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -44,11 +48,11 @@ const createInitialErrors = (): ErrorState => ({
 const GREETING_PT =
   "Olá! Eu sou o Simãozinho, bibliotecário da Fundação. Em que posso ajudar você hoje com o nosso acervo?";
 
-const STARTER_PROMPTS_PT = [
+const STARTER_PROMPTS_PT: StartScreenPrompt[] = [
   { title: "Buscar pessoas citadas (ex.: Manoel Teixeira)" },
   { title: "Ver obras sobre um tema (ex.: milho, usanza)" },
   { title: "Onde encontro o documento X? (livro, página, ano)" },
-] as unknown as any; // satisfaz o tipo StartScreenPrompt[]
+];
 
 const PLACEHOLDER_INPUT_PT = "Digite sua pergunta…";
 /* ================================= */
@@ -97,8 +101,8 @@ export function ChatKitPanel({
       console.error("Falha ao carregar chatkit.js", event);
       if (!isMountedRef.current) return;
       setScriptStatus("error");
-      const detail = (event as CustomEvent<unknown>)?.detail ?? "erro desconhecido";
-      setErrorState({ script: `Erro: ${detail}`, retryable: false });
+      const detail = (event as unknown as { detail?: unknown })?.detail ?? "erro desconhecido";
+      setErrorState({ script: `Erro: ${String(detail)}`, retryable: false });
       setIsInitializingSession(false);
     };
 
@@ -214,7 +218,7 @@ export function ChatKitPanel({
           throw new Error(detail);
         }
 
-        const clientSecret = data?.client_secret as string | undefined;
+        const clientSecret = (data as { client_secret?: string }).client_secret;
         if (!clientSecret) throw new Error("Resposta sem client_secret");
 
         if (isMountedRef.current) {
@@ -224,8 +228,7 @@ export function ChatKitPanel({
         return clientSecret;
       } catch (error) {
         console.error("Falha ao criar sessão do ChatKit", error);
-        const detail =
-          error instanceof Error ? error.message : "Não foi possível iniciar a sessão.";
+        const detail = error instanceof Error ? error.message : "Não foi possível iniciar a sessão.";
         if (isMountedRef.current) {
           setErrorState({ session: detail, retryable: false });
         }
@@ -247,8 +250,7 @@ export function ChatKitPanel({
     },
     startScreen: {
       greeting: GREETING_PT,
-      // 👇 aqui estava o erro: precisa ser StartScreenPrompt[]
-      prompts: STARTER_PROMPTS_PT as any,
+      prompts: STARTER_PROMPTS_PT,
     },
     composer: {
       placeholder: PLACEHOLDER_INPUT_PT,
@@ -310,9 +312,6 @@ export function ChatKitPanel({
       <ChatKit
         key={widgetInstanceKey}
         control={chatkit.control}
-        // força UI do widget em PT-BR
-        // @ts-ignore (prop do web component)
-        locale="pt-BR"
         className={
           blockingError || isInitializingSession
             ? "pointer-events-none opacity-0"
@@ -339,27 +338,28 @@ function extractErrorDetail(
 ): string {
   if (!payload) return fallback;
 
-  const error = payload.error;
+  const error = (payload as { error?: unknown }).error;
   if (typeof error === "string") return error;
 
-  if (error && typeof error === "object" && "message" in error) {
+  if (error && typeof error === "object" && "message" in (error as object)) {
     const msg = (error as { message?: unknown }).message;
     if (typeof msg === "string") return msg;
   }
 
-  const details = payload.details;
+  const details = (payload as { details?: unknown }).details;
   if (typeof details === "string") return details;
 
-  if (details && typeof details === "object" && "error" in details) {
+  if (details && typeof details === "object" && "error" in (details as object)) {
     const nestedError = (details as { error?: unknown }).error;
     if (typeof nestedError === "string") return nestedError;
-    if (nestedError && typeof nestedError === "object" && "message" in nestedError) {
+    if (nestedError && typeof nestedError === "object" && "message" in (nestedError as object)) {
       const msg = (nestedError as { message?: unknown }).message;
       if (typeof msg === "string") return msg;
     }
   }
 
-  if (typeof payload.message === "string") return payload.message;
+  const message = (payload as { message?: unknown }).message;
+  if (typeof message === "string") return message;
 
   return fallback;
 }
