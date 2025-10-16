@@ -30,9 +30,14 @@ type ErrorState = {
   retryable: boolean;
 };
 
+/** ===== tipos esperados pelos prompts da tela inicial ===== */
 type StartScreenPrompt = {
-  title: string;
+  /** rótulo que aparece no botão */
+  label: string;
+  /** texto que é enviado como pergunta quando o usuário clica */
+  prompt: string;
 };
+/** ======================================================== */
 
 const isBrowser = typeof window !== "undefined";
 const isDev = process.env.NODE_ENV !== "production";
@@ -49,9 +54,21 @@ const GREETING_PT =
   "Olá! Eu sou o Simãozinho, bibliotecário da Fundação. Em que posso ajudar você hoje com o nosso acervo?";
 
 const STARTER_PROMPTS_PT: StartScreenPrompt[] = [
-  { title: "Buscar pessoas citadas (ex.: Manoel Teixeira)" },
-  { title: "Ver obras sobre um tema (ex.: milho, usanza)" },
-  { title: "Onde encontro o documento X? (livro, página, ano)" },
+  {
+    label: "Pessoas citadas",
+    prompt:
+      "Quero ver documentos que citem Manoel Teixeira (outra pessoa), com referência de livro/página se possível.",
+  },
+  {
+    label: "Tema do acervo",
+    prompt:
+      "Mostre obras relacionadas ao tema 'milho' (ou 'usanza'), indicando onde encontro no acervo.",
+  },
+  {
+    label: "Onde está o documento?",
+    prompt:
+      "Onde encontro o documento X? Informe livro, parte, página e ano, se disponível.",
+  },
 ];
 
 const PLACEHOLDER_INPUT_PT = "Digite sua pergunta…";
