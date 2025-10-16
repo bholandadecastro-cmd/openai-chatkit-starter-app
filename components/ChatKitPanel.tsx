@@ -3,11 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatKit, useChatKit } from "@openai/chatkit-react";
 import {
-  // Você pode manter seus imports se preferir centralizar em /lib/config.
-  // Aqui vamos sobrepor com PT-BR diretamente.
-  // STARTER_PROMPTS,
-  // PLACEHOLDER_INPUT,
-  // GREETING,
   CREATE_SESSION_ENDPOINT,
   WORKFLOW_ID,
   getThemeConfig,
@@ -45,15 +40,18 @@ const createInitialErrors = (): ErrorState => ({
   retryable: false,
 });
 
-/** ====== Textos em PT-BR ====== */
-const GREETING_PT = "Olá! Eu sou o Simãozinho, bibliotecário da Fundação. Em que posso ajudar você hoje com o nosso acervo?";
+/* ====== TEXTOS EM PT-BR ====== */
+const GREETING_PT =
+  "Olá! Eu sou o Simãozinho, bibliotecário da Fundação. Em que posso ajudar você hoje com o nosso acervo?";
+
 const STARTER_PROMPTS_PT = [
-  "Buscar pessoas citadas (ex.: Manoel Teixeira)",
-  "Ver obras sobre um tema (ex.: milho, usanza)",
-  "Onde encontro o documento X? (livro, página, ano)",
-];
+  { title: "Buscar pessoas citadas (ex.: Manoel Teixeira)" },
+  { title: "Ver obras sobre um tema (ex.: milho, usanza)" },
+  { title: "Onde encontro o documento X? (livro, página, ano)" },
+] as unknown as any; // satisfaz o tipo StartScreenPrompt[]
+
 const PLACEHOLDER_INPUT_PT = "Digite sua pergunta…";
-/** ============================= */
+/* ================================= */
 
 export function ChatKitPanel({
   theme,
@@ -187,7 +185,6 @@ export function ChatKitPanel({
             workflow: { id: WORKFLOW_ID },
             chatkit_configuration: {
               file_upload: { enabled: true },
-              // Você pode acrescentar configurações extras aqui.
             },
           }),
         });
@@ -250,15 +247,14 @@ export function ChatKitPanel({
     },
     startScreen: {
       greeting: GREETING_PT,
-      prompts: STARTER_PROMPTS_PT,
+      // 👇 aqui estava o erro: precisa ser StartScreenPrompt[]
+      prompts: STARTER_PROMPTS_PT as any,
     },
     composer: {
       placeholder: PLACEHOLDER_INPUT_PT,
       attachments: { enabled: true },
     },
-    threadItemActions: {
-      feedback: false,
-    },
+    threadItemActions: { feedback: false },
     onClientTool: async (invocation: {
       name: string;
       params: Record<string, unknown>;
@@ -267,7 +263,7 @@ export function ChatKitPanel({
         const requested = invocation.params.theme;
         if (requested === "light" || requested === "dark") {
           if (isDev) console.debug("[ChatKitPanel] switch_theme", requested);
-          onThemeRequest(requested);
+          onThemeRequest(requested as ColorScheme);
           return { success: true };
         }
         return { success: false };
@@ -288,17 +284,10 @@ export function ChatKitPanel({
 
       return { success: false };
     },
-    onResponseEnd: () => {
-      onResponseEnd();
-    },
-    onResponseStart: () => {
-      setErrorState({ integration: null, retryable: false });
-    },
-    onThreadChange: () => {
-      processedFacts.current.clear();
-    },
+    onResponseEnd: () => onResponseEnd(),
+    onResponseStart: () => setErrorState({ integration: null, retryable: false }),
+    onThreadChange: () => processedFacts.current.clear(),
     onError: ({ error }: { error: unknown }) => {
-      // A UI do ChatKit já mostra erros para o usuário.
       console.error("ChatKit error", error);
     },
   });
@@ -321,8 +310,8 @@ export function ChatKitPanel({
       <ChatKit
         key={widgetInstanceKey}
         control={chatkit.control}
-        // 🔽 força a UI do widget para PT-BR
-        // @ts-ignore: prop de runtime do web component
+        // força UI do widget em PT-BR
+        // @ts-ignore (prop do web component)
         locale="pt-BR"
         className={
           blockingError || isInitializingSession
@@ -333,7 +322,9 @@ export function ChatKitPanel({
       <ErrorOverlay
         error={blockingError}
         fallbackMessage={
-          blockingError || !isInitializingSession ? null : "Iniciando sessão do assistente..."
+          blockingError || !isInitializingSession
+            ? null
+            : "Iniciando sessão do assistente..."
         }
         onRetry={blockingError && errors.retryable ? handleResetChat : null}
         retryLabel="Reiniciar chat"
