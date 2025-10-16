@@ -1,11 +1,16 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { ChatKitPanel, type FactAction } from "@/components/ChatKitPanel";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function App() {
   const { scheme, setScheme } = useColorScheme();
+
+  // força o modo claro (garante widget claro também)
+  useEffect(() => {
+    setScheme("light");
+  }, [setScheme]);
 
   const handleWidgetAction = useCallback(async (action: FactAction) => {
     if (process.env.NODE_ENV !== "production") {
@@ -20,7 +25,8 @@ export default function App() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-end bg-slate-100 dark:bg-slate-950">
+    // fundo da página branco
+    <main className="flex min-h-screen flex-col items-center justify-end bg-white">
       <div className="mx-auto w-full max-w-5xl">
         <ChatKitPanel
           theme={scheme}
