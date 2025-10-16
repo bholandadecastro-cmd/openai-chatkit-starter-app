@@ -13,24 +13,19 @@ export default function Home() {
         </p>
 
         {/* Cartão que contém o chat */}
-        <div className="fs-chat-card mt-6 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden">
-          {/* Aqui fica o componente original do starter */}
+        <div className="relative mt-6 overflow-hidden rounded-2xl border border-slate-800 shadow-2xl">
           <App />
+          {/* Overlay decorativo, só Tailwind */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(500px 160px at 20% -10%, rgba(34,197,94,.12), transparent 60%), radial-gradient(400px 140px at 80% -20%, rgba(59,130,246,.10), transparent 60%)",
+            }}
+          />
         </div>
       </div>
-
-      {/* Estilinho extra (opcional) */}
-      <style jsx global>{`
-        .fs-chat-card::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          background:
-            radial-gradient(500px 160px at 20% -10%, rgba(34,197,94,.12), transparent 60%),
-            radial-gradient(400px 140px at 80% -20%, rgba(59,130,246,.10), transparent 60%);
-        }
-      `}</style>
     </main>
   );
 }
