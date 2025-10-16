@@ -30,14 +30,12 @@ type ErrorState = {
   retryable: boolean;
 };
 
-/** ===== tipos esperados pelos prompts da tela inicial ===== */
+/** ===== tipo esperado pelos prompts da tela inicial ===== */
 type StartScreenPrompt = {
-  /** rótulo que aparece no botão */
   label: string;
-  /** texto que é enviado como pergunta quando o usuário clica */
   prompt: string;
 };
-/** ======================================================== */
+/** ====================================================== */
 
 const isBrowser = typeof window !== "undefined";
 const isDev = process.env.NODE_ENV !== "production";
@@ -51,25 +49,9 @@ const createInitialErrors = (): ErrorState => ({
 
 /* ====== TEXTOS EM PT-BR ====== */
 const GREETING_PT =
-  "Olá! Eu sou o Simãozinho, bibliotecário da Fundação. Em que posso ajudar você hoje com o nosso acervo?";
+  "Olá! Eu sou o Simãozinho, profundo conhecedor do acervo da Fundação e da história da Cidade de Goiás, em que posso ajudar hoje?";
 
-const STARTER_PROMPTS_PT: StartScreenPrompt[] = [
-  {
-    label: "Pessoas citadas",
-    prompt:
-      "Quero ver documentos que citem Manoel Teixeira (outra pessoa), com referência de livro/página se possível.",
-  },
-  {
-    label: "Tema do acervo",
-    prompt:
-      "Mostre obras relacionadas ao tema 'milho' (ou 'usanza'), indicando onde encontro no acervo.",
-  },
-  {
-    label: "Onde está o documento?",
-    prompt:
-      "Onde encontro o documento X? Informe livro, parte, página e ano, se disponível.",
-  },
-];
+const STARTER_PROMPTS_PT: StartScreenPrompt[] = []; // sem sugestões
 
 const PLACEHOLDER_INPUT_PT = "Digite sua pergunta…";
 /* ================================= */
@@ -267,7 +249,7 @@ export function ChatKitPanel({
     },
     startScreen: {
       greeting: GREETING_PT,
-      prompts: STARTER_PROMPTS_PT,
+      prompts: STARTER_PROMPTS_PT, // vazio = sem sugestões
     },
     composer: {
       placeholder: PLACEHOLDER_INPUT_PT,
